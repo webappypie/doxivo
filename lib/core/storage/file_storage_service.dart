@@ -28,11 +28,17 @@ class FileStorageService {
   Directory get documentsDir => Directory(p.join(baseDir.path, 'documents'));
   Directory get thumbnailsDir => Directory(p.join(baseDir.path, 'thumbnails'));
   Directory get tempDir => Directory(p.join(baseDir.path, 'temp'));
+  Directory get tempDirectory => tempDir;
 
   /// Creates a unique temporary file path inside `temp/`.
   String createTempFilePath({String extension = 'tmp'}) {
     final timestamp = DateTime.now().microsecondsSinceEpoch;
     return p.join(tempDir.path, 'temp_$timestamp.$extension');
+  }
+
+  /// Creates and returns a File handle for a unique temporary file.
+  File createTempFile({String extension = 'tmp'}) {
+    return File(createTempFilePath(extension: extension));
   }
 
   /// Writes data atomically to a destination file via a temporary file.

@@ -6,6 +6,7 @@ import 'package:doxivo/core/storage/file_storage_service.dart';
 import 'package:doxivo/domain/repositories/document_repository.dart';
 import 'package:doxivo/main.dart';
 import 'package:doxivo/services/pdf_service.dart';
+import 'package:doxivo/services/pdf_toolkit_service.dart';
 import 'package:doxivo/services/scanner_service.dart';
 
 void main() {
@@ -27,6 +28,7 @@ void main() {
     final repo = DocumentRepository(appDatabase: db);
     final pdfService = PdfService(fileStorageService: storage);
     final scanner = ScannerService();
+    final toolkit = PdfToolkitService();
 
     await tester.pumpWidget(
       DoxivoApp(
@@ -34,6 +36,7 @@ void main() {
         documentRepository: repo,
         pdfService: pdfService,
         scannerService: scanner,
+        pdfToolkitService: toolkit,
       ),
     );
 
@@ -48,6 +51,7 @@ void main() {
     // Verify Primary CTAs in QuickActionBar
     expect(find.text('Scan Documents'), findsOneWidget);
     expect(find.text('Import Images to PDF'), findsOneWidget);
+    expect(find.text('PDF Tools'), findsOneWidget);
 
     // Verify Search and Filters
     expect(find.text('Search documents...'), findsOneWidget);

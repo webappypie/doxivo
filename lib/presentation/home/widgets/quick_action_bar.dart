@@ -5,11 +5,13 @@ import '../../../core/theme/app_typography.dart';
 class QuickActionBar extends StatelessWidget {
   final VoidCallback onScanPressed;
   final VoidCallback onImportPressed;
+  final VoidCallback? onToolsPressed;
 
   const QuickActionBar({
     super.key,
     required this.onScanPressed,
     required this.onImportPressed,
+    this.onToolsPressed,
   });
 
   @override
@@ -32,7 +34,7 @@ class QuickActionBar extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.25),
+                  color: AppColors.primary.withAlpha(64),
                   blurRadius: 16,
                   offset: const Offset(0, 8),
                 ),
@@ -43,7 +45,7 @@ class QuickActionBar extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.18),
+                    color: Colors.white.withAlpha(45),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.document_scanner, color: Colors.white, size: 32),
@@ -60,7 +62,7 @@ class QuickActionBar extends StatelessWidget {
                       const SizedBox(height: 2),
                       Text(
                         'Auto-edge detection & instant PDF',
-                        style: AppTypography.bodySmall.copyWith(color: Colors.white.withValues(alpha: 0.85)),
+                        style: AppTypography.bodySmall.copyWith(color: Colors.white.withAlpha(216)),
                       ),
                     ],
                   ),
@@ -72,17 +74,39 @@ class QuickActionBar extends StatelessWidget {
         ),
         const SizedBox(height: 12),
 
-        // Secondary Gallery Import Action
-        OutlinedButton.icon(
-          onPressed: onImportPressed,
-          icon: const Icon(Icons.photo_library_outlined, size: 20),
-          label: const Text('Import Images to PDF'),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.textPrimaryLight,
-            side: const BorderSide(color: AppColors.borderLight, width: 1.5),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            padding: const EdgeInsets.symmetric(vertical: 14),
-          ),
+        // Secondary Action Row: Import Images and PDF Tools
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: onImportPressed,
+                icon: const Icon(Icons.photo_library_outlined, size: 18),
+                label: const Text('Import Images to PDF'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.textPrimaryLight,
+                  side: const BorderSide(color: AppColors.borderLight, width: 1.5),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+              ),
+            ),
+            if (onToolsPressed != null) ...[
+              const SizedBox(width: 10),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: onToolsPressed,
+                  icon: const Icon(Icons.build_outlined, size: 18),
+                  label: const Text('PDF Tools'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    side: const BorderSide(color: AppColors.primary, width: 1.5),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
       ],
     );

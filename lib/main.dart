@@ -5,6 +5,7 @@ import 'core/theme/app_theme.dart';
 import 'domain/repositories/document_repository.dart';
 import 'presentation/home/home_screen.dart';
 import 'services/pdf_service.dart';
+import 'services/pdf_toolkit_service.dart';
 import 'services/scanner_service.dart';
 
 void main() async {
@@ -24,6 +25,7 @@ void main() async {
   final documentRepository = DocumentRepository(appDatabase: appDatabase);
   final pdfService = PdfService(fileStorageService: fileStorageService);
   final scannerService = ScannerService();
+  final pdfToolkitService = PdfToolkitService();
 
   runApp(
     DoxivoApp(
@@ -31,6 +33,7 @@ void main() async {
       documentRepository: documentRepository,
       pdfService: pdfService,
       scannerService: scannerService,
+      pdfToolkitService: pdfToolkitService,
     ),
   );
 }
@@ -40,6 +43,7 @@ class DoxivoApp extends StatelessWidget {
   final DocumentRepository documentRepository;
   final PdfService pdfService;
   final ScannerService scannerService;
+  final PdfToolkitService? pdfToolkitService;
 
   const DoxivoApp({
     super.key,
@@ -47,6 +51,7 @@ class DoxivoApp extends StatelessWidget {
     required this.documentRepository,
     required this.pdfService,
     required this.scannerService,
+    this.pdfToolkitService,
   });
 
   @override
@@ -62,6 +67,7 @@ class DoxivoApp extends StatelessWidget {
         documentRepository: documentRepository,
         pdfService: pdfService,
         scannerService: scannerService,
+        pdfToolkitService: pdfToolkitService,
       ),
     );
   }

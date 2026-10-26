@@ -3,19 +3,32 @@ import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../core/storage/file_storage_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/models/document_model.dart';
 import '../../domain/repositories/document_repository.dart';
+import '../../services/pdf_toolkit_service.dart';
+import '../toolkit/compress_screen.dart';
+import '../toolkit/export_images_screen.dart';
+import '../toolkit/organize_pages_screen.dart';
+import '../toolkit/protect_screen.dart';
+import '../toolkit/signature_screen.dart';
+import '../toolkit/split_screen.dart';
+import '../toolkit/watermark_screen.dart';
 
 class PdfViewerScreen extends StatefulWidget {
   final DocumentModel document;
   final DocumentRepository documentRepository;
+  final PdfToolkitService? pdfToolkitService;
+  final FileStorageService? fileStorageService;
 
   const PdfViewerScreen({
     super.key,
     required this.document,
     required this.documentRepository,
+    this.pdfToolkitService,
+    this.fileStorageService,
   });
 
   @override
@@ -169,9 +182,14 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
     );
   }
 
+  void _navigateToToolkit(Widget screen) {
+    Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => screen));
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDesktopOrWeb = Platform.isWindows || Platform.isLinux || Platform.isMacOS;
+    final hasToolkit = widget.pdfToolkitService != null && widget.fileStorageService != null;
 
     return Scaffold(
       appBar: AppBar(
@@ -200,6 +218,100 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
             tooltip: 'Share',
             onPressed: _sharePdf,
           ),
+          if (hasToolkit)
+            PopupMenuButton<String>(
+              icon: const Icon(Icons.build_outlined),
+              tooltip: 'PDF Tools',
+              onSelected: (val) {
+                switch (val) {
+                  case 'watermark':
+                    _navigateToToolkit(WatermarkScreen(
+                      document: _doc,
+                      pdfToolkitService: widget.pdfToolkitService!,
+                      fileStorageService: widget.fileStorageService!,
+                      documentRepository: widget.documentRepository,
+                    ));
+                    break;
+                  case 'sign':
+                    _navigateToToolkit(SignatureScreen(
+                      document: _doc,
+                      pdfToolkitService: widget.pdfToolkitService!,
+                      fileStorageService: widget.fileStorageService!,
+                      documentRepository: widget.documentRepository,
+                    ));
+                    break;
+                  case 'protect':
+                    _navigateToToolkit(ProtectScreen(
+                      document: _doc,
+                      pdfToolkitService: widget.pdfToolkitService!,
+                      fileStorageService: widget.fileStorageService!,
+                      documentRepository: widget.documentRepository,
+                    ));
+                    break;
+                  case 'compress':
+                    _navigateToToolkit(CompressScreen(
+                      document: _doc,
+                      pdfToolkitService: widget.pdfToolkitService!,
+                      fileStorageService: widget.fileStorageService!,
+                      documentRepository: widget.documentRepository,
+                    ));
+                    break;
+                  case 'organize':
+                    _navigateToToolkit(OrganizePagesScreen(
+                      document: _doc,
+                      pdfToolkitService: widget.pdfToolkitService!,
+                      fileStorageService: widget.fileStorageService!,
+                      documentRepository: widget.documentRepository,
+                    ));
+                    break;
+                  case 'split':
+                    _navigateToToolkit(SplitScreen(
+                      document: _doc,
+                      pdfToolkitService: widget.pdfToolkitService!,
+                      fileStorageService: widget.fileStorageService!,
+                      documentRepository: widget.documentRepository,
+                    ));
+                    break;
+                  case 'exportImages':
+                    _navigateToToolkit(ExportImagesScreen(
+                      document: _doc,
+                      pdfToolkitService: widget.pdfToolkitService!,
+                      fileStorageService: widget.fileStorageService!,
+                    ));
+                    break;
+                }
+              },
+              itemBuilder: (ctx) => const [
+                PopupMenuItem(
+                  value: 'watermark',
+                  child: Row(children: [Icon(Icons.branding_watermark_outlined, size: 20), SizedBox(width: 10), Text('Add Watermark')]),
+                ),
+                PopupMenuItem(
+                  value: 'sign',
+                  child: Row(children: [Icon(Icons.draw, size: 20), SizedBox(width: 10), Text('Sign Document')]),
+                ),
+                PopupMenuItem(
+                  value: 'protect',
+                  child: Row(children: [Icon(Icons.lock_outline, size: 20), SizedBox(width: 10), Text('Protect with Password')]),
+                ),
+                PopupMenuItem(
+                  value: 'compress',
+                  child: Row(children: [Icon(Icons.compress, size: 20), SizedBox(width: 10), Text('Compress PDF')]),
+                ),
+                PopupMenuItem(
+                  value: 'organize',
+                  child: Row(children: [Icon(Icons.rotate_right, size: 20), SizedBox(width: 10), Text('Organize / Rotate Pages')]),
+                ),
+                PopupMenuItem(
+                  value: 'split',
+                  child: Row(children: [Icon(Icons.splitscreen, size: 20), SizedBox(width: 10), Text('Split PDF')]),
+                ),
+                PopupMenuItem(
+                  value: 'exportImages',
+                  child: Row(children: [Icon(Icons.image_outlined, size: 20), SizedBox(width: 10), Text('Export Pages as Images')]),
+                ),
+              ],
+            ),
           PopupMenuButton<String>(
             onSelected: (val) {
               if (val == 'rename') _renameDocument();
@@ -257,7 +369,7 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
+                color: AppColors.primary.withAlpha(25),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.picture_as_pdf, size: 64, color: AppColors.primary),

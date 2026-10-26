@@ -7,7 +7,12 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, PdfEncryptChannel.CHANNEL)
-            .setMethodCallHandler(PdfEncryptChannel(applicationContext))
+        val toolkitHandler = PdfToolkitChannel(applicationContext)
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, PdfToolkitChannel.CHANNEL)
+            .setMethodCallHandler(toolkitHandler)
+
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, PdfToolkitChannel.LEGACY_CRYPTO_CHANNEL)
+            .setMethodCallHandler(toolkitHandler)
     }
 }

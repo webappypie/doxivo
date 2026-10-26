@@ -5,9 +5,11 @@ import '../../core/theme/app_typography.dart';
 import '../../domain/models/document_model.dart';
 import '../../domain/repositories/document_repository.dart';
 import '../../services/pdf_service.dart';
+import '../../services/pdf_toolkit_service.dart';
 import '../../services/scanner_service.dart';
 import '../common/empty_state_view.dart';
 import '../scanner/scan_review_screen.dart';
+import '../toolkit/tools_hub_screen.dart';
 import '../viewer/pdf_viewer_screen.dart';
 import 'widgets/document_card.dart';
 import 'widgets/quick_action_bar.dart';
@@ -17,6 +19,7 @@ class HomeScreen extends StatefulWidget {
   final DocumentRepository documentRepository;
   final PdfService pdfService;
   final ScannerService scannerService;
+  final PdfToolkitService? pdfToolkitService;
 
   const HomeScreen({
     super.key,
@@ -24,6 +27,7 @@ class HomeScreen extends StatefulWidget {
     required this.documentRepository,
     required this.pdfService,
     required this.scannerService,
+    this.pdfToolkitService,
   });
 
   @override
@@ -137,12 +141,26 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadDocuments();
   }
 
+  void _openToolsHub() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (ctx) => ToolsHubScreen(
+          documentRepository: widget.documentRepository,
+          fileStorageService: widget.fileStorageService,
+          pdfToolkitService: widget.pdfToolkitService ?? PdfToolkitService(),
+        ),
+      ),
+    );
+  }
+
   Future<void> _openDocument(DocumentModel doc) async {
     final deleted = await Navigator.of(context).push<bool>(
       MaterialPageRoute(
         builder: (ctx) => PdfViewerScreen(
           document: doc,
           documentRepository: widget.documentRepository,
+          pdfToolkitService: widget.pdfToolkitService ?? PdfToolkitService(),
+          fileStorageService: widget.fileStorageService,
         ),
       ),
     );
@@ -180,6 +198,11 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           IconButton(
+            icon: const Icon(Icons.build_outlined),
+            tooltip: 'PDF Toolkit',
+            onPressed: _openToolsHub,
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh),
             tooltip: 'Refresh Library',
             onPressed: _loadDocuments,
@@ -195,6 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
             QuickActionBar(
               onScanPressed: _handleScan,
               onImportPressed: _handleImport,
+              onToolsPressed: _openToolsHub,
             ),
             const SizedBox(height: 24),
 
