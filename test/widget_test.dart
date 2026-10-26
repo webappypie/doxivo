@@ -1,24 +1,67 @@
+import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:doxivo/core/database/app_database.dart';
+import 'package:doxivo/core/storage/file_storage_service.dart';
+import 'package:doxivo/domain/repositories/document_repository.dart';
 import 'package:doxivo/main.dart';
+import 'package:doxivo/services/pdf_service.dart';
+import 'package:doxivo/services/scanner_service.dart';
 
 void main() {
-  testWidgets('Doxivo PoC Home Screen smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const DoxivoApp());
+  TestWidgetsFlutterBinding.ensureInitialized();
+  sqfliteFfiInit();
+  databaseFactory = databaseFactoryFfi;
 
-    // Verify app title and key PoC sections are displayed
-    expect(find.text('Doxivo — Phase 00 PoC'), findsOneWidget);
-    expect(find.text('Privacy Boundary: Local-First'), findsOneWidget);
-    expect(find.text('1. PDF Engine PoC (Creation & Watermark)'), findsOneWidget);
-    expect(find.text('2. Document Image Pipeline'), findsOneWidget);
-    expect(find.text('3. Native Document Scanner'), findsOneWidget);
-    expect(find.text('4. Offline OCR & CER Evaluation'), findsOneWidget);
+  testWidgets('Doxivo App and Home Screen initial smoke test', (WidgetTester tester) async {
+    final tempDir = Directory.systemTemp.createTempSync('doxivo_widget_test_');
 
-    // Verify interactive action buttons exist
-    expect(find.text('Create PDF'), findsOneWidget);
-    expect(find.text('Watermark PDF'), findsOneWidget);
-    expect(find.text('Grayscale'), findsOneWidget);
-    expect(find.text('Black & White'), findsOneWidget);
-    expect(find.text('Run Levenshtein CER Metric Test'), findsOneWidget);
+    final storage = FileStorageService();
+    final db = AppDatabase();
+
+    await tester.runAsync(() async {
+      await storage.initialize(customBaseDir: tempDir);
+      await db.initDatabase(customPath: '${tempDir.path}/widget_test.db');
+    });
+
+    final repo = DocumentRepository(appDatabase: db);
+    final pdfService = PdfService(fileStorageService: storage);
+    final scanner = ScannerService();
+
+    await tester.pumpWidget(
+      DoxivoApp(
+        fileStorageService: storage,
+        documentRepository: repo,
+        pdfService: pdfService,
+        scannerService: scanner,
+      ),
+    );
+
+    await tester.runAsync(() async {
+      await Future.delayed(const Duration(milliseconds: 200));
+    });
+    await tester.pump();
+
+    // Verify Brand title in AppBar
+    expect(find.text('Doxivo'), findsOneWidget);
+
+    // Verify Primary CTAs in QuickActionBar
+    expect(find.text('Scan Documents'), findsOneWidget);
+    expect(find.text('Import Images to PDF'), findsOneWidget);
+
+    // Verify Search and Filters
+    expect(find.text('Search documents...'), findsOneWidget);
+    expect(find.text('Favorites'), findsOneWidget);
+
+    // Verify Initial Empty State
+    expect(find.text('No Documents Yet'), findsOneWidget);
+    expect(find.text('Scan First Document'), findsOneWidget);
+
+    await tester.runAsync(() async {
+      await db.close();
+      if (tempDir.existsSync()) {
+        tempDir.deleteSync(recursive: true);
+      }
+    });
   });
 }
