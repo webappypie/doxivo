@@ -15,6 +15,8 @@ import 'protect_screen.dart';
 import 'signature_screen.dart';
 import 'split_screen.dart';
 import 'watermark_screen.dart';
+import '../ocr/ocr_screen.dart';
+import '../ocr/searchable_pdf_screen.dart';
 
 class ToolsHubScreen extends StatelessWidget {
   final DocumentRepository documentRepository;
@@ -357,6 +359,48 @@ class ToolsHubScreen extends StatelessWidget {
                     document: doc,
                     pdfToolkitService: pdfToolkitService,
                     fileStorageService: fileStorageService,
+                  ),
+                );
+              },
+            ),
+
+            const SizedBox(height: 12),
+            Text('OCR & Intelligence', style: AppTypography.titleMedium),
+            const SizedBox(height: 12),
+
+            _ToolTile(
+              icon: Icons.text_fields_outlined,
+              iconColor: const Color(0xFF8B5CF6),
+              title: 'Text Recognition (OCR)',
+              subtitle: 'Extract editable text from scanned documents with Hindi & English support',
+              onTap: () {
+                _selectDocumentAndNavigate(
+                  context,
+                  'OCR Text Extraction',
+                  (doc) => OcrScreen(
+                    document: doc,
+                    documentRepository: documentRepository,
+                    fileStorageService: fileStorageService,
+                    pdfToolkitService: pdfToolkitService,
+                  ),
+                );
+              },
+            ),
+
+            _ToolTile(
+              icon: Icons.find_in_page_outlined,
+              iconColor: const Color(0xFF0D9488),
+              title: 'Make PDF Searchable',
+              subtitle: 'Embed an aligned text layer into scanned PDFs for keyword search',
+              onTap: () {
+                _selectDocumentAndNavigate(
+                  context,
+                  'Make Searchable',
+                  (doc) => SearchablePdfScreen(
+                    document: doc,
+                    documentRepository: documentRepository,
+                    fileStorageService: fileStorageService,
+                    pdfToolkitService: pdfToolkitService,
                   ),
                 );
               },

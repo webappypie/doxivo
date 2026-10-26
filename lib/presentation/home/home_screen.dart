@@ -3,6 +3,7 @@ import '../../core/storage/file_storage_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
 import '../../domain/models/document_model.dart';
+import '../../domain/models/document_search_result.dart';
 import '../../domain/repositories/document_repository.dart';
 import '../../services/pdf_service.dart';
 import '../../services/pdf_toolkit_service.dart';
@@ -36,6 +37,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<DocumentModel> _documents = [];
+  List<DocumentSearchResult> _searchResults = [];
   bool _isLoading = true;
   String _searchQuery = '';
   bool _showFavoritesOnly = false;
@@ -52,15 +54,29 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() => _isLoading = true);
     }
     try {
-      final docs = await widget.documentRepository.getAllDocuments(
-        searchQuery: _searchQuery,
-        favoritesOnly: _showFavoritesOnly,
-      );
-      if (mounted) {
-        setState(() {
-          _documents = docs;
-          _isLoading = false;
-        });
+      if (_searchQuery.trim().isNotEmpty) {
+        final results = await widget.documentRepository.search(
+          _searchQuery,
+          favoritesOnly: _showFavoritesOnly,
+        );
+        if (mounted) {
+          setState(() {
+            _searchResults = results;
+            _documents = results.map((r) => r.document).toList();
+            _isLoading = false;
+          });
+        }
+      } else {
+        final docs = await widget.documentRepository.getAllDocuments(
+          favoritesOnly: _showFavoritesOnly,
+        );
+        if (mounted) {
+          setState(() {
+            _searchResults = [];
+            _documents = docs;
+            _isLoading = false;
+          });
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -308,10 +324,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 separatorBuilder: (context, index) => const SizedBox(height: 10),
                 itemBuilder: (context, index) {
                   final doc = _documents[index];
+                  String? snippet;
+                  if (_searchResults.isNotEmpty && index < _searchResults.length) {
+                    final searchRes = _searchResults[index];
+                    if (searchRes.hasOcrMatches) {
+                      final match = searchRes.ocrMatches.first;
+                      snippet = 'Page ${match.pageIndex + 1}: "${match.snippetContext}"';
+                    }
+                  }
                   return DocumentCard(
                     document: doc,
                     onTap: () => _openDocument(doc),
                     onToggleFavorite: () => _toggleFavorite(doc),
+                    ocrSnippet: snippet,
                   );
                 },
               ),

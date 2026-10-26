@@ -16,6 +16,8 @@ import '../toolkit/protect_screen.dart';
 import '../toolkit/signature_screen.dart';
 import '../toolkit/split_screen.dart';
 import '../toolkit/watermark_screen.dart';
+import '../ocr/ocr_screen.dart';
+import '../ocr/searchable_pdf_screen.dart';
 
 class PdfViewerScreen extends StatefulWidget {
   final DocumentModel document;
@@ -279,9 +281,34 @@ class _PdfViewerScreenState extends State<PdfViewerScreen> {
                       fileStorageService: widget.fileStorageService!,
                     ));
                     break;
+                  case 'ocr':
+                    _navigateToToolkit(OcrScreen(
+                      document: _doc,
+                      documentRepository: widget.documentRepository,
+                      fileStorageService: widget.fileStorageService!,
+                      pdfToolkitService: widget.pdfToolkitService!,
+                    ));
+                    break;
+                  case 'searchable':
+                    _navigateToToolkit(SearchablePdfScreen(
+                      document: _doc,
+                      documentRepository: widget.documentRepository,
+                      fileStorageService: widget.fileStorageService!,
+                      pdfToolkitService: widget.pdfToolkitService!,
+                    ));
+                    break;
                 }
               },
               itemBuilder: (ctx) => const [
+                PopupMenuItem(
+                  value: 'ocr',
+                  child: Row(children: [Icon(Icons.text_fields_outlined, size: 20), SizedBox(width: 10), Text('Extract Text (OCR)')]),
+                ),
+                PopupMenuItem(
+                  value: 'searchable',
+                  child: Row(children: [Icon(Icons.find_in_page_outlined, size: 20), SizedBox(width: 10), Text('Make Searchable PDF')]),
+                ),
+                PopupMenuDivider(),
                 PopupMenuItem(
                   value: 'watermark',
                   child: Row(children: [Icon(Icons.branding_watermark_outlined, size: 20), SizedBox(width: 10), Text('Add Watermark')]),

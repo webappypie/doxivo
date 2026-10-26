@@ -9,12 +9,14 @@ class DocumentCard extends StatelessWidget {
   final DocumentModel document;
   final VoidCallback onTap;
   final VoidCallback onToggleFavorite;
+  final String? ocrSnippet;
 
   const DocumentCard({
     super.key,
     required this.document,
     required this.onTap,
     required this.onToggleFavorite,
+    this.ocrSnippet,
   });
 
   @override
@@ -95,6 +97,34 @@ class DocumentCard extends StatelessWidget {
                       fontSize: 11,
                     ),
                   ),
+                  if (ocrSnippet != null && ocrSnippet!.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: AppColors.accentTeal.withAlpha(20),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.find_in_page_outlined, size: 12, color: AppColors.accentTeal),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              ocrSnippet!,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: AppColors.accentTeal,
+                                fontStyle: FontStyle.italic,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

@@ -55,6 +55,8 @@ void main() {
     expect(find.text('Sign PDF'), findsOneWidget);
     expect(find.text('Add Watermark'), findsOneWidget);
     expect(find.text('Export as Images'), findsOneWidget);
+    expect(find.text('Text Recognition (OCR)'), findsOneWidget);
+    expect(find.text('Make PDF Searchable'), findsOneWidget);
 
     // Tap Merge PDFs
     await tester.tap(find.text('Merge PDFs'));

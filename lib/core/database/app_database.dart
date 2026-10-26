@@ -4,7 +4,7 @@ import 'package:sqflite/sqflite.dart';
 
 class AppDatabase {
   static const String dbName = 'doxivo_library.db';
-  static const int dbVersion = 1;
+  static const int dbVersion = 2;
 
   Database? _db;
 
@@ -28,6 +28,7 @@ class AppDatabase {
       dbPath,
       version: dbVersion,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
     return _db!;
   }
@@ -50,6 +51,31 @@ class AppDatabase {
 
     await db.execute('CREATE INDEX IF NOT EXISTS idx_docs_created ON documents(created_at DESC)');
     await db.execute('CREATE INDEX IF NOT EXISTS idx_docs_fav ON documents(is_favorite)');
+
+    await _createOcrTables(db);
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await _createOcrTables(db);
+    }
+  }
+
+  Future<void> _createOcrTables(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS ocr_indexes (
+        id TEXT PRIMARY KEY,
+        document_id TEXT NOT NULL,
+        page_index INTEGER NOT NULL,
+        text_content TEXT NOT NULL,
+        language TEXT NOT NULL,
+        created_at INTEGER NOT NULL,
+        FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE
+      )
+    ''');
+
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_ocr_doc ON ocr_indexes(document_id)');
+    await db.execute('CREATE INDEX IF NOT EXISTS idx_ocr_text ON ocr_indexes(text_content)');
   }
 
   Future<void> close() async {

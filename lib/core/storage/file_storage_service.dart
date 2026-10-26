@@ -30,10 +30,13 @@ class FileStorageService {
   Directory get tempDir => Directory(p.join(baseDir.path, 'temp'));
   Directory get tempDirectory => tempDir;
 
+  int _counter = 0;
+
   /// Creates a unique temporary file path inside `temp/`.
   String createTempFilePath({String extension = 'tmp'}) {
     final timestamp = DateTime.now().microsecondsSinceEpoch;
-    return p.join(tempDir.path, 'temp_$timestamp.$extension');
+    final count = _counter++;
+    return p.join(tempDir.path, 'temp_${timestamp}_$count.$extension');
   }
 
   /// Creates and returns a File handle for a unique temporary file.
@@ -43,16 +46,23 @@ class FileStorageService {
 
   /// Writes data atomically to a destination file via a temporary file.
   Future<File> writeBytesAtomically(String destinationPath, Uint8List bytes) async {
-    final tempPath = createTempFilePath(extension: p.extension(destinationPath).replaceFirst('.', ''));
+    final tempPath = p.join(tempDir.path, 'staging_${DateTime.now().microsecondsSinceEpoch}_${_counter++}.${p.extension(destinationPath).replaceFirst('.', '')}');
     final tempFile = File(tempPath);
+    await tempFile.parent.create(recursive: true);
     await tempFile.writeAsBytes(bytes, flush: true);
 
     final destFile = File(destinationPath);
-    if (await destFile.exists()) {
+    if (tempPath != destinationPath && await destFile.exists()) {
       await destFile.delete();
     }
     await destFile.parent.create(recursive: true);
     return tempFile.rename(destinationPath);
+  }
+
+  /// Returns a managed PDF destination path inside `documents/`.
+  String createManagedPdfPath(String filename) {
+    final cleanName = sanitizeFilename(filename);
+    return p.join(documentsDir.path, cleanName.endsWith('.pdf') ? cleanName : '$cleanName.pdf');
   }
 
   /// Saves a final generated PDF into the managed `documents/` directory.
