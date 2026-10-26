@@ -1,0 +1,9 @@
+DOXIVO DOCUMENT SCANNER AND PDF TOOLKIT
+Invoice Number: INV-2026-9041
+Date: October 26, 2026
+Customer: Acquirer Corp
+Description: Document Scanning and On-Device Processing
+Subtotal: $1,250.00
+Tax (18%): $225.00
+Total: $1,475.00
+Payment Status: Paid Offline
